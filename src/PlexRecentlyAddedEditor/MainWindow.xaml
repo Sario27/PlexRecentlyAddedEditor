@@ -1,0 +1,122 @@
+<Window x:Class="PlexRecentlyAddedEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Plex Recently Added Editor" Height="800" Width="1450" MinHeight="620" MinWidth="1150"
+        Icon="app.ico">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Step 1: Connect -->
+        <GroupBox Header="1. Connect to Plex" Padding="8" Margin="0,0,0,8" Grid.Row="0">
+            <StackPanel>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Server URL" VerticalAlignment="Center" Grid.Column="0"/>
+                    <TextBox x:Name="ServerUrlBox" Grid.Column="1" Text="http://localhost:32400"/>
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Plex Token" VerticalAlignment="Center" Grid.Column="0"/>
+                    <PasswordBox x:Name="TokenBox" Grid.Column="1" Margin="0,0,6,0"/>
+                    <Button x:Name="DetectTokenButton" Content="Detect local token" Grid.Column="2" Margin="0,0,6,0" Click="DetectTokenButton_Click"/>
+                    <Button x:Name="BrowseTokenButton" Content="Browse for Preferences.xml..." Grid.Column="3" Margin="0,0,6,0" Click="BrowseTokenButton_Click"/>
+                    <Button x:Name="SignInButton" Content="Sign in with Plex" Grid.Column="4" Click="SignInButton_Click"/>
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="TMDb API Key" VerticalAlignment="Center" Grid.Column="0"/>
+                    <PasswordBox x:Name="TmdbKeyBox" Grid.Column="1" Margin="0,0,6,0"/>
+                    <Button x:Name="GetTmdbKeyButton" Content="Get a TMDb API key" Grid.Column="2" Click="GetTmdbKeyButton_Click"/>
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="AboutButton" Content="About / Privacy" Grid.Column="0" Padding="8,4" Click="AboutButton_Click"/>
+                    <Button x:Name="HelpButton" Content="How do I get these?" Grid.Column="1" HorizontalAlignment="Center" Padding="8,4" Click="HelpButton_Click"/>
+                    <Button x:Name="ConnectButton" Content="Connect" Width="100" Grid.Column="2" Click="ConnectButton_Click"/>
+                </Grid>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Step 2: Libraries -->
+        <GroupBox Header="2. Choose libraries" Grid.Row="1" Padding="8" Margin="0,0,0,8" x:Name="LibraryGroup" IsEnabled="False">
+            <StackPanel>
+                <ListBox x:Name="LibraryList" MaxHeight="140" Margin="0,0,0,6"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Show the most recently added" VerticalAlignment="Center" Grid.Column="0"/>
+                    <TextBox x:Name="ItemsPerLibraryBox" Text="50" Grid.Column="1" Margin="6,0"/>
+                    <TextBlock Text="items per library" VerticalAlignment="Center" Grid.Column="2"/>
+                    <Button x:Name="ScanButton" Content="Load list" Width="100" Grid.Column="3" Click="ScanButton_Click"/>
+                </Grid>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Progress -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,8">
+            <ProgressBar x:Name="ScanProgressBar" Height="18" Minimum="0" Maximum="100"/>
+            <TextBlock x:Name="StatusText" Margin="0,4,0,0" Foreground="Gray"/>
+        </StackPanel>
+
+        <!-- Results -->
+        <GroupBox Header="3. Review and choose what to change" Grid.Row="3" Padding="8" Margin="0,0,0,8">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                        <Button x:Name="SelectAllButton" Content="Select all" Margin="0,0,6,0" Click="SelectAllButton_Click"/>
+                        <Button x:Name="SelectNoneButton" Content="Select none" Click="SelectNoneButton_Click"/>
+                    </StackPanel>
+                    <TextBlock x:Name="ResultsSummaryText" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                </DockPanel>
+                <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" Foreground="Gray" FontSize="11">
+                    Click a row to select it, Ctrl+click or Shift+click to select several. Double-click the date column to edit a date.
+                </TextBlock>
+                <DataGrid x:Name="ResultsGrid" AutoGenerateColumns="False" CanUserAddRows="False" RowHeaderWidth="0"
+                          SelectionMode="Extended" SelectionUnit="FullRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Library" Binding="{Binding LibraryName}" Width="90" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding MediaKind}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Title" Binding="{Binding DisplayTitle}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Current Added" Binding="{Binding CurrentAddedDisplay}" Width="140" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Hint" Binding="{Binding HintText}" Width="200" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="New Added Date (yyyy-MM-dd)" Binding="{Binding NewDateText, Mode=TwoWay}" Width="180"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </GroupBox>
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="UpdateButton" Content="Update selected items" Width="170" Margin="0,0,8,0" IsEnabled="False" Click="UpdateButton_Click"/>
+            <Button x:Name="ExportSelectedButton" Content="Export selected to CSV" Width="160" Margin="0,0,8,0" IsEnabled="False" Click="ExportSelectedButton_Click"/>
+            <Button x:Name="ExportAllButton" Content="Export all to CSV" Width="140" IsEnabled="False" Click="ExportAllButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

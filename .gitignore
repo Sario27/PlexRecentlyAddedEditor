@@ -1,0 +1,19 @@
+## .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Publish output
+publish/
+*.pubxml
+*.pubxml.user
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
