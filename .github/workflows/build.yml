@@ -56,9 +56,24 @@ jobs:
           generate_release_notes: true
 
       - name: Scan release exe with VirusTotal
+        id: virustotal
         uses: crazy-max/ghaction-virustotal@v5
         with:
           vt_api_key: ${{ secrets.VT_API_KEY }}
-          update_release_body: true
+          update_release_body: false
           files: |
             publish/PlexRecentlyAddedEditor.exe
+
+      # update_release_body above only works when the action runs off a native GitHub
+      # "release published" event; we trigger off a tag push instead, so it silently
+      # no-ops. Append the scan link ourselves so it actually lands every time.
+      - name: Append VirusTotal link to release notes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VT_URL="${{ steps.virustotal.outputs.analysis }}"
+          VT_URL="${VT_URL#*=}"
+          CURRENT_BODY=$(gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" --json body -q .body)
+          printf '%s\n\n---\n\n**VirusTotal scan of PlexRecentlyAddedEditor.exe:** %s\n' "$CURRENT_BODY" "$VT_URL" \
+            | gh release edit "${{ github.ref_name }}" --repo "${{ github.repository }}" --notes-file -
